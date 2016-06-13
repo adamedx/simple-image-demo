@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Canvas JSON / BSON Renderer</title>
+        <script type="text/javascript" src="bson/bson.js"></script>
+        <script type="text/javascript" src="defaultDrawData.js"></script>
+        <script type="text/javascript">
+
+            function renderBSONData(bsonData) {
+                var BSON = bson().BSON;
+                var drawData = BSON.deserialize(bsonData);
+                renderData(drawData);
+            }
+
+            function renderJSONData(jsonData) {
+                var drawData = JSON.parse(jsonData);
+                renderData(drawData);
+            }
+
+            function renderData(drawData) {
+                var canvas = document.getElementById("canvas1");
+                canvas.width = drawData.width;
+                canvas.height = drawData.height;
+
+                var ctx = canvas.getContext("2d");
+                var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                var pixels = imageData.data;
+                var pixelCount = imageData.width * imageData.height;
+
+                var smallest = (imageData.width < imageData.height) ? imageData.width : imageData.height;
+                for (var coord = 0; coord < smallest; coord++) {
+                    var pixelSpot = coord + coord * imageData.height;
+                }
+
+                var sparseImage = drawData.format == 1;
+                var pixelCount = sparseImage ? drawData.sparseSize : drawData.width * drawData.height;
+
+                for (var sparsePixel = 0; sparsePixel < pixelCount; sparsePixel++ ) {
+                     var pixelIndex = sparseImage ? drawData.imageData[sparsePixel * 2] : sparsePixel;
+                     var colorOffset = sparseImage ? 1 : 0
+                     var pixelSize = sparseImage ? 2 : 1
+                     var color = drawData.imageData[sparsePixel * pixelSize + colorOffset];
+                     pixels[pixelIndex * 4 + 0] = (color & parseInt('000000FF',16)) >>> 0;  // red
+                     pixels[pixelIndex * 4 + 1] = (color & parseInt('0000FF00',16)) >>> 8;  // blue
+                     pixels[pixelIndex * 4 + 2] = (color & parseInt('00FF0000',16)) >>> 16; // green
+                     pixels[pixelIndex * 4 + 3] = (color & parseInt('FF000000',16)) >>> 24; // alpha
+                 }
+
+                 ctx.putImageData(imageData, 0, 0);
+            }
+
+            function handleRead(evt) {
+                var data = new Uint8Array(evt.target.result);
+                var isBson = files[0].name.endsWith(".bson")
+
+                if (isBson) {
+                    renderBSONData(data);
+                } else {
+                    renderJSONData(data);
+                }
+            }
+
+            function handleFileSelect(evt) {
+                var files = evt.target.files;
+                console.log(files[0].name);
+                var reader = new FileReader();
+                var isBson = files[0].name.endsWith(".bson")
+                var content = isBson ? reader.readAsArrayBuffer(files[0]) : reader.readAsText(files[0]);
+                console.log((typeof content));
+
+                // weird closure trick to capture
+                reader.onload = (function(binaryData) {
+                    return function(evt) {
+                        var data = binaryData ? new Uint8Array(evt.target.result) : evt.target.result;
+
+                        if (binaryData) {
+                            renderBSONData(data);
+                        } else {
+                            renderJSONData(data);
+                        }
+                   }
+                })(isBson);
+            }
+
+            function defaultDraw() {
+                renderJSONData(imageJSON);
+            }
+
+            function loadPage() {
+                document.getElementById('files').addEventListener('change', handleFileSelect, false);
+                defaultDraw();
+            }
+        </script>
+    </head>
+    <body onload="loadPage();">
+      <div>Let's render some JSON / BSON!</div>
+      <div>
+        <input type="file" id="files" name="files[]"/></br></br>
+        <canvas id="canvas1" width="640" height="640"></canvas>
+      </div>
+    </body>
+</html>
