@@ -20,23 +20,23 @@ class SimpleImage
   def initialize(is_sparse, width = 0, height = 0, default_color = 0)
     @width = width
     @height = height
-    @sparseSize = 0
-    @defaultColor = default_color
+    @sparse_size = 0
+    @default_color = default_color
     @sparse = is_sparse
     @sparse_map = Hash.new
-    @imageData = is_sparse ? [] : Array.new(width * height) { defaultColor }
+    @image_data = is_sparse ? [] : Array.new(width * height) { default_color }
   end
 
   def set_pixel(x, y, red, green, blue, alpha = 255)
     pixel_index = get_pixel_index(x, y)
 
     existing_sparse_offset = @sparse ? find_sparse_pixel(pixel_index) : nil
-    image_offset = existing_sparse_offset.nil? ? new_sparse_pixel_offset : existing_sparse_offset
+    image_offset = ! @sparse ? pixel_index : ( existing_sparse_offset.nil? ? new_sparse_pixel_offset : existing_sparse_offset)
 
     color_offset = @sparse ? 1 : 0
     color = red + (green << 8) + (blue << 16) + (alpha << 24)
 
-    @imageData[image_offset + color_offset] = color
+    @image_data[image_offset + color_offset] = color
 
     if @sparse && existing_sparse_offset.nil?
       add_sparse_pixel(pixel_index)
@@ -49,9 +49,9 @@ class SimpleImage
     pixel_index = get_pixel_index(x, y)
     if @sparse
       existing_pixel = find_sparse_pixel(pixel_index)
-      existing_pixel.nil? ? @defaultColor : @imageData[existing_pixel + 1]
+      existing_pixel.nil? ? @default_color : @image_data[existing_pixel + 1]
     else
-      @imageData[pixel_index]
+      @image_data[pixel_index]
     end
   end
 
@@ -60,17 +60,17 @@ class SimpleImage
       width: width,
       height: height,
       format: @sparse ? 1 : 0,
-      sparseSize: sparseSize,
-      defaultColor: defaultColor,
-      imageData: imageData
+      sparse_size: sparse_size,
+      default_color: default_color,
+      image_data: image_data
     }
   end
 
   attr_reader :width
   attr_reader :height
-  attr_reader :sparseSize
-  attr_reader :imageData
-  attr_reader :defaultColor
+  attr_reader :sparse_size
+  attr_reader :image_data
+  attr_reader :default_color
 
   private
 
@@ -87,14 +87,14 @@ class SimpleImage
   end
 
   def new_sparse_pixel_offset
-    @sparseSize * 2
+    @sparse_size * 2
   end
 
   def add_sparse_pixel(pixel_index)
     new_offset = new_sparse_pixel_offset
-    @imageData[new_offset] = pixel_index
+    @image_data[new_offset] = pixel_index
     @sparse_map[pixel_index] = new_offset
-    @sparseSize += 1
+    @sparse_size += 1
   end
 
   def find_sparse_pixel(pixel_index)
@@ -104,7 +104,7 @@ class SimpleImage
   def validate_color!(x, y, color)
     newcolor = get_pixel(x, y)
     if newcolor != color
-      raise "At #{x},#{y} the color shoud be #{color}, but #{newcolor} was returned"
+      raise "At #{x},#{y} the color should be #{color}, but #{newcolor} was returned"
     end
   end
 end
