@@ -26,7 +26,6 @@ class ImageWriter
 
   def self.write_binary_file(image, binary_file)
     image_data = image.get_hash.to_bson
-    image_length = image_data.length
     File.binwrite(binary_file, image_data)
   end
 

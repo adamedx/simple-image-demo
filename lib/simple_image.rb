@@ -60,9 +60,9 @@ class SimpleImage
       width: width,
       height: height,
       format: @sparse ? 1 : 0,
-      sparse_size: sparse_size,
-      default_color: default_color,
-      image_data: image_data
+      sparseSize: sparse_size,
+      defaultColor: default_color,
+      imageData: image_data
     }
   end
 
