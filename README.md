@@ -10,17 +10,23 @@ The *Simple Image* format is an easy way to represent a two-dimensional image. I
 
 ```json
 {
-  "width": 5,
-  "height": 5,
-  "sparseSize": 5,
-  "defaultColor": 3,
-  "imageData": {
-    "0": 4278190335,
-    "6": 4278190335,
-    "12": 4278190335,
-    "18": 4278190335,
-    "24": 4278190335
-  }
+  "width": 7,
+  "height": 7,
+  "format": 1,
+  "sparseSize": 12,
+  "defaultColor": 0,
+  "imageData": [
+    34,
+    4278190080,
+    20,
+    4294901760,
+    28,
+    4278255360,
+    14,
+    4294967040,
+    46,
+    4278190335
+  ]
 }
 ```
 
